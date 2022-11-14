@@ -16726,6 +16726,64 @@
     }
   ]
 }</script>
+<script type="text/javascript">(function a() {
+  function support_format_webp() {
+    var elem = document.createElement("canvas");
+
+    if (!!(elem.getContext && elem.getContext("2d"))) {
+      return elem.toDataURL("image/webp").indexOf("data:image/webp") == 0;
+    } else {
+      return false;
+    }
+  }
+
+  var webp = support_format_webp();
+
+  // var imgs = Array.prototype.slice.call(document.querySelectorAll("img"));
+  // imgs.forEach(function(i) {
+  //   var u = new URL(i.src);
+  //   u.searchParams.append("x-oss-process", webp ? "image/format,webp/quality,Q_80" : "image/format,png/quality,Q_80");
+  //  i.src = u.toString();
+  // });
+
+  function visitRule(rule) {
+    var backgroundImage = rule.style.backgroundImage;
+    if (!backgroundImage) return;
+    var match = backgroundImage.match(/^url\("?(.+)"+?\)$/i);
+    if (!match) return;
+    var url = match[1];
+    var u = new URL(url);
+    var isPNG = u.pathname.endsWith(".png");
+    var isJPG = u.pathname.endsWith(".jpg") || u.pathname.endsWith(".jpeg");
+    if (isJPG) {
+      u.searchParams.append(
+        "x-oss-process",
+        webp ? "image/format,webp/quality,Q_80" : "image/format,jpg/quality,Q_80"
+      );
+    } else if (isPNG) {
+      u.searchParams.append(
+        "x-oss-process",
+        webp ? "image/format,webp/quality,Q_80" : "image/format,png/quality,Q_80"
+      );
+    }
+    rule.style.backgroundImage = "url(" + u.toString() + ")";
+  }
+
+  var styleSheets = Array.prototype.slice.call(document.styleSheets);
+  styleSheets.forEach(function(ss) {
+    var rules = Array.prototype.slice.call(ss.rules);
+    rules.forEach(function(rule) {
+      if (rule instanceof CSSStyleRule) {
+        visitRule(rule);
+      } else if (rule instanceof CSSMediaRule) {
+        Array.prototype.slice.call(rule.cssRules).forEach(function(rule) {
+          visitRule(rule);
+        });
+      }
+    });
+  });
+})();
+</script>
 <script
   src="https://cdn.dancf.com/packages/gaoding/gd-tracker/2.0.1/gd-tracker.browser.js"></script>
 <script>
